@@ -36,7 +36,7 @@ Then `[200]` contains `1` as `[100]` is 1 after dereferencing.
 `INP D`: set `D` to a value obtained from stdin.
 `OUT P`: output parameter `P` to stdout
 
-#### Jumps
+#### Jumps
 
 `JNZ P1 P2`: jump to cell in position `P2` if `P1 = 0`
 `JZ  P1 P2`: output parameter `P` to stdout
