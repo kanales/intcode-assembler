@@ -12,9 +12,13 @@ import qualified Text.Megaparsec.Char.Lexer    as L
 
 type Parser = Parsec () String
 
-assemblyFile :: Parser [Opcode Param]
-assemblyFile = parseOpcode `sepEndBy1` eol
+data Line = Tag String | Instruction (Opcode Param) deriving Show
 
+parseLine :: Parser Line
+parseLine = (Tag <$> parseTag) <|> (Instruction <$> parseOpcode)
+
+parseTag :: Parser String
+parseTag = (:) <$> letterChar <*> some alphaNumChar <* char ':'
 
 parseInteger :: Parser Integer
 parseInteger = do
@@ -31,7 +35,7 @@ parseParam :: Parser Param
 parseParam = space *> p <* space
   where
     p =
-        (Rel <$> try (char '*' >> inBrackets parseInteger))
+        (Rel <$> try (char 'R' >> parseInteger))
             <|> (Pos <$> inBrackets parseInteger)
             <|> (Imm <$> parseInteger)
 
@@ -53,7 +57,7 @@ main :: IO ()
 main = do
     (x : _) <- getArgs
     xs      <- readFile x
-    let res = parse parseOpcode "" `traverse` lines xs
+    let res = parse parseOpcode "" `traverse` (filter (/= []) . lines) xs
     case res of
         Right ops -> putStr . intercalate "," . fmap show $ ops >>= repr
         Left  err -> hPrint stderr err
